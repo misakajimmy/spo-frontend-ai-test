@@ -1,0 +1,22 @@
+{
+  "name": "spo-frontend-ai-test",
+  "version": "1.0.0",
+  "description": "AI模型代码生成能力测试项目",
+  "main": "evaluate.js",
+  "scripts": {
+    "evaluate": "node evaluate.js",
+    "evaluate:all": "node evaluate-all.js"
+  },
+  "keywords": [
+    "ai",
+    "code-generation",
+    "react",
+    "typescript",
+    "evaluation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}
+

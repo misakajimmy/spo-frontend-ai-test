@@ -1,0 +1,1364 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SPO (Social Platform Operations) API",
+        "version": "1.0.0",
+        "description": "\n        社交平台运营系统后端API文档\n        \n        ## 功能模块\n        - **平台账号管理**: 多平台账号的登录、Cookie管理、信息同步\n        - **资源库管理**: 素材资源的存储配置、浏览、搜索（只读）\n        - **上传任务**: 视频上传任务的创建和管理（开发中）\n        \n        ## 支持平台\n        - 抖音 (douyin)\n        - Bilibili (bilibili) \n        - 小红书 (xiaohongshu)\n        - 快手 (kuaishou)\n        - 视频号 (tencent)\n        - TikTok (tiktok)\n      ",
+        "contact": {
+            "name": "API Support",
+            "email": "support@spo.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3001",
+            "description": "开发服务器"
+        },
+        {
+            "url": "http://localhost:3001",
+            "description": "生产服务器"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "ApiResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "description": "状态码"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "响应消息"
+                    },
+                    "data": {
+                        "type": "object",
+                        "description": "响应数据"
+                    }
+                }
+            },
+            "PlatformAccount": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "platform": {
+                        "type": "string",
+                        "enum": [
+                            "douyin",
+                            "bilibili",
+                            "xiaohongshu",
+                            "kuaishou",
+                            "tencent",
+                            "tiktok"
+                        ]
+                    },
+                    "accountName": {
+                        "type": "string"
+                    },
+                    "accountId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "cookiePath": {
+                        "type": "string"
+                    },
+                    "userId": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "username": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "followersCount": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "totalFavorited": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ResourceLibrary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "资源库名称"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "local",
+                            "webdav",
+                            "smb",
+                            "ftp"
+                        ],
+                        "description": "资源库类型"
+                    },
+                    "config": {
+                        "type": "object",
+                        "description": "资源库配置（根据类型不同有不同的配置）"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "isDefault": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "ResourceInfo": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "文件/文件夹名称"
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "完整路径"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "video",
+                            "image",
+                            "audio",
+                            "folder"
+                        ],
+                        "description": "资源类型"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "文件大小（字节）"
+                    },
+                    "modifiedTime": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "extension": {
+                        "type": "string",
+                        "description": "文件扩展名"
+                    },
+                    "duration": {
+                        "type": "integer",
+                        "description": "媒体时长（秒）"
+                    },
+                    "resolution": {
+                        "type": "object",
+                        "properties": {
+                            "width": {
+                                "type": "integer"
+                            },
+                            "height": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "LocalResourceConfig": {
+                "type": "object",
+                "required": [
+                    "basePath"
+                ],
+                "properties": {
+                    "basePath": {
+                        "type": "string",
+                        "description": "资源库根目录路径",
+                        "example": "D:\\Videos"
+                    },
+                    "allowedExtensions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "允许的文件扩展名",
+                        "example": [
+                            ".mp4",
+                            ".avi",
+                            ".mov",
+                            ".mkv"
+                        ]
+                    },
+                    "thumbnailCache": {
+                        "type": "string",
+                        "description": "缩略图缓存目录"
+                    }
+                }
+            },
+            "WebDAVResourceConfig": {
+                "type": "object",
+                "required": [
+                    "url",
+                    "username",
+                    "password"
+                ],
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "WebDAV服务器URL",
+                        "example": "https://dav.jianguoyun.com/dav/"
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "用户名"
+                    },
+                    "password": {
+                        "type": "string",
+                        "description": "密码"
+                    },
+                    "basePath": {
+                        "type": "string",
+                        "description": "基础路径",
+                        "default": "/"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Platform",
+            "description": "平台管理"
+        },
+        {
+            "name": "Account",
+            "description": "账号管理"
+        },
+        {
+            "name": "Resource Library",
+            "description": "资源库管理"
+        },
+        {
+            "name": "Resource Browse",
+            "description": "资源浏览"
+        },
+        {
+            "name": "Config",
+            "description": "全局配置"
+        },
+        {
+            "name": "Health",
+            "description": "健康检查"
+        }
+    ],
+    "paths": {
+        "/api/platforms": {
+            "get": {
+                "summary": "获取所有平台列表",
+                "tags": [
+                    "Platform"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "platform": {
+                                                        "type": "string",
+                                                        "example": "douyin"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "抖音"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/platforms/enabled": {
+            "get": {
+                "summary": "获取启用的平台列表",
+                "tags": [
+                    "Platform"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    }
+                }
+            }
+        },
+        "/api/accounts": {
+            "get": {
+                "summary": "获取所有账号",
+                "tags": [
+                    "Account"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PlatformAccount"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}": {
+            "get": {
+                "summary": "根据ID获取账号",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "账号ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "账号不存在"
+                    }
+                }
+            },
+            "put": {
+                "summary": "更新账号",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "账号ID"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "accountName": {
+                                        "type": "string"
+                                    },
+                                    "isActive": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "更新成功"
+                    },
+                    "404": {
+                        "description": "账号不存在"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "删除账号",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "账号ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功"
+                    },
+                    "404": {
+                        "description": "账号不存在"
+                    }
+                }
+            }
+        },
+        "/api/accounts/platform/{platform}": {
+            "get": {
+                "summary": "根据平台获取账号",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "platform",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "douyin",
+                                "bilibili",
+                                "xiaohongshu",
+                                "kuaishou",
+                                "tencent",
+                                "tiktok"
+                            ]
+                        },
+                        "description": "平台类型"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/cookie-details": {
+            "get": {
+                "summary": "获取账号的Cookie详情",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "账号ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "platform": {
+                                            "type": "string"
+                                        },
+                                        "accountId": {
+                                            "type": "string"
+                                        },
+                                        "cookiesCount": {
+                                            "type": "integer"
+                                        },
+                                        "originsCount": {
+                                            "type": "integer"
+                                        },
+                                        "filePath": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/login/start": {
+            "post": {
+                "summary": "开始登录（打开浏览器）",
+                "tags": [
+                    "Account"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "platform",
+                                    "accountName"
+                                ],
+                                "properties": {
+                                    "platform": {
+                                        "type": "string",
+                                        "enum": [
+                                            "douyin",
+                                            "bilibili",
+                                            "xiaohongshu",
+                                            "kuaishou",
+                                            "tencent",
+                                            "tiktok"
+                                        ],
+                                        "description": "平台类型"
+                                    },
+                                    "accountName": {
+                                        "type": "string",
+                                        "description": "账号名称"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "浏览器已打开",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "sessionId": {
+                                            "type": "string",
+                                            "description": "会话ID"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "缺少必要参数"
+                    }
+                }
+            }
+        },
+        "/api/accounts/login/finish": {
+            "post": {
+                "summary": "完成登录（保存Cookie）",
+                "tags": [
+                    "Account"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "sessionId",
+                                    "platform",
+                                    "accountName"
+                                ],
+                                "properties": {
+                                    "sessionId": {
+                                        "type": "string",
+                                        "description": "会话ID"
+                                    },
+                                    "platform": {
+                                        "type": "string",
+                                        "enum": [
+                                            "douyin",
+                                            "bilibili",
+                                            "xiaohongshu",
+                                            "kuaishou",
+                                            "tencent",
+                                            "tiktok"
+                                        ]
+                                    },
+                                    "accountName": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "账号创建成功"
+                    }
+                }
+            }
+        },
+        "/api/accounts/login/cancel": {
+            "post": {
+                "summary": "取消登录",
+                "tags": [
+                    "Account"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "sessionId"
+                                ],
+                                "properties": {
+                                    "sessionId": {
+                                        "type": "string",
+                                        "description": "会话ID"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "登录已取消"
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/validate": {
+            "post": {
+                "summary": "验证账号Cookie",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "账号ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "验证结果",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "isValid": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "accountInfo": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/refresh": {
+            "post": {
+                "summary": "刷新账号Cookie（重新登录）",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "账号ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回新的会话ID"
+                    }
+                }
+            }
+        },
+        "/api/accounts/{id}/update-info": {
+            "post": {
+                "summary": "更新单个账号信息",
+                "description": "从平台获取最新的账号信息并更新到数据库",
+                "tags": [
+                    "Account"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "账号ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功"
+                    }
+                }
+            }
+        },
+        "/api/accounts/update-all-info": {
+            "post": {
+                "summary": "更新所有账号信息",
+                "description": "批量从平台获取所有账号的最新信息并更新到数据库",
+                "tags": [
+                    "Account"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新完成",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "total": {
+                                            "type": "integer",
+                                            "description": "总账号数"
+                                        },
+                                        "success": {
+                                            "type": "integer",
+                                            "description": "成功更新数"
+                                        },
+                                        "failed": {
+                                            "type": "integer",
+                                            "description": "失败数"
+                                        },
+                                        "results": {
+                                            "type": "array",
+                                            "description": "详细结果"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/resources/libraries": {
+            "get": {
+                "summary": "获取所有资源库配置",
+                "tags": [
+                    "Resource Library"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ResourceLibrary"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "创建资源库配置",
+                "tags": [
+                    "Resource Library"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "name",
+                                    "type",
+                                    "config"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "资源库名称",
+                                        "example": "本地视频库"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "local",
+                                            "webdav",
+                                            "smb",
+                                            "ftp"
+                                        ],
+                                        "description": "资源库类型",
+                                        "example": "local"
+                                    },
+                                    "config": {
+                                        "type": "object",
+                                        "description": "资源库配置（根据类型不同）",
+                                        "example": {
+                                            "basePath": "D:\\Videos",
+                                            "allowedExtensions": [
+                                                ".mp4",
+                                                ".avi",
+                                                ".mov"
+                                            ]
+                                        }
+                                    },
+                                    "isDefault": {
+                                        "type": "boolean",
+                                        "description": "是否设为默认",
+                                        "example": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "创建成功"
+                    },
+                    "400": {
+                        "description": "参数错误或配置无效"
+                    }
+                }
+            }
+        },
+        "/api/resources/libraries/active": {
+            "get": {
+                "summary": "获取激活的资源库",
+                "tags": [
+                    "Resource Library"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    }
+                }
+            }
+        },
+        "/api/resources/libraries/{id}": {
+            "put": {
+                "summary": "更新资源库配置",
+                "tags": [
+                    "Resource Library"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "config": {
+                                        "type": "object"
+                                    },
+                                    "isActive": {
+                                        "type": "boolean"
+                                    },
+                                    "isDefault": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "更新成功"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "删除资源库配置",
+                "tags": [
+                    "Resource Library"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功"
+                    }
+                }
+            }
+        },
+        "/api/resources/libraries/{id}/test": {
+            "post": {
+                "summary": "测试资源库连接",
+                "tags": [
+                    "Resource Library"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "连接成功"
+                    },
+                    "400": {
+                        "description": "连接失败"
+                    }
+                }
+            }
+        },
+        "/api/resources/browse/{libraryId}": {
+            "get": {
+                "summary": "浏览资源库",
+                "tags": [
+                    "Resource Browse"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "libraryId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "目录路径",
+                        "example": "/2024/videos"
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "video",
+                                "image",
+                                "audio",
+                                "folder"
+                            ]
+                        },
+                        "description": "资源类型筛选"
+                    },
+                    {
+                        "in": "query",
+                        "name": "sortBy",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "name",
+                                "size",
+                                "date"
+                            ]
+                        },
+                        "description": "排序字段"
+                    },
+                    {
+                        "in": "query",
+                        "name": "sortOrder",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        },
+                        "description": "排序方向"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ResourceInfo"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/resources/browse": {
+            "get": {
+                "summary": "浏览默认资源库",
+                "tags": [
+                    "Resource Browse"
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "目录路径"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    }
+                }
+            }
+        },
+        "/api/resources/search/{libraryId}": {
+            "get": {
+                "summary": "搜索资源",
+                "tags": [
+                    "Resource Browse"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "libraryId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "keyword",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "搜索关键词",
+                        "example": "产品介绍"
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "video",
+                                "image",
+                                "audio"
+                            ]
+                        },
+                        "description": "资源类型"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    },
+                    "400": {
+                        "description": "缺少搜索关键词"
+                    }
+                }
+            }
+        },
+        "/api/resources/info/{libraryId}": {
+            "get": {
+                "summary": "获取资源信息",
+                "tags": [
+                    "Resource Browse"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "libraryId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "资源路径"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    },
+                    "400": {
+                        "description": "缺少资源路径"
+                    }
+                }
+            }
+        },
+        "/api/resources/access-path/{libraryId}": {
+            "get": {
+                "summary": "获取资源访问路径",
+                "tags": [
+                    "Resource Browse"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "libraryId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "资源路径"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功，返回完整访问路径"
+                    },
+                    "400": {
+                        "description": "缺少资源路径"
+                    }
+                }
+            }
+        },
+        "/api/resources/batch-info/{libraryId}": {
+            "post": {
+                "summary": "批量获取资源信息",
+                "tags": [
+                    "Resource Browse"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "libraryId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "资源库ID"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "paths"
+                                ],
+                                "properties": {
+                                    "paths": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "description": "资源路径数组",
+                                        "example": [
+                                            "/video1.mp4",
+                                            "/images/cover.jpg"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    },
+                    "400": {
+                        "description": "缺少资源路径数组"
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "summary": "健康检查",
+                "tags": [
+                    "Health"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "服务正常",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SPO Backend is running"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
