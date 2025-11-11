@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-11-11T02:44:46.826Z",
+  "projectPath": "C:\\Users\\aup\\Desktop\\RyzenAI\\spo-frontend-ai-test\\my-model",
+  "scores": {
+    "structure": {
+      "score": 6.5,
+      "max": 10,
+      "details": [
+        "✓ src 存在",
+        "✓ src/components 存在",
+        "✓ src/pages 存在",
+        "✓ src/services 存在",
+        "✓ src/types 存在",
+        "+ src/hooks 存在（加分）",
+        "+ src/utils 存在（加分）",
+        "+ src/styles 存在（加分）"
+      ]
+    },
+    "api": {
+      "score": 9.5,
+      "max": 10,
+      "details": [
+        "✓ api.ts 存在",
+        "✓ platform.ts 存在",
+        "✓ account.ts 存在",
+        "✓ resource.ts 存在",
+        "API端点实现: 28/28"
+      ]
+    },
+    "types": {
+      "score": 8,
+      "max": 8,
+      "details": [
+        "✓ PlatformAccount 已定义",
+        "✓ ResourceLibrary 已定义",
+        "✓ ResourceInfo 已定义",
+        "✓ LocalResourceConfig 已定义",
+        "✓ WebDAVResourceConfig 已定义",
+        "✓ ApiResponse 已定义",
+        "✓ any使用率低 (2.86%)",
+        "✓ 接口定义充分 (6个)"
+      ]
+    },
+    "config": {
+      "score": 4.5,
+      "max": 5,
+      "details": [
+        "✓ package.json 存在",
+        "✓ React版本: ^19.2.0",
+        "✓ TypeScript已配置",
+        "✓ 启动脚本已配置",
+        "✓ 构建脚本已配置",
+        "✓ tsconfig.json 存在",
+        "✓ README.md 存在"
+      ]
+    }
+  },
+  "files": {
+    "count": 17,
+    "tsFiles": 14,
+    "componentFiles": 2
+  },
+  "totalScore": "28.5",
+  "maxScore": 33,
+  "percentage": "86.4"
+}
